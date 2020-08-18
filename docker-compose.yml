@@ -1,0 +1,18 @@
+version: '2.1'
+services:
+    cv:
+        build:
+            context: cv
+            dockerfile: Dockerfile.template
+        privileged: true
+        network_mode: host
+        depends_on:
+            - "server"
+        devices:
+            - "/dev:/dev"
+    server:
+        build:
+            context: server
+            dockerfile: Dockerfile.template
+        privileged: true
+        network_mode: host

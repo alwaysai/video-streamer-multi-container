@@ -3,7 +3,7 @@ services:
     cv:
         build:
             context: cv
-            dockerfile: Dockerfile.standalone
+            dockerfile: Dockerfile.service
         privileged: true
         network_mode: host
         depends_on:

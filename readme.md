@@ -1,45 +1,72 @@
-# Video Streamer
-This alwaysAI app performs realtime object detection and streams video and text data to a Flask-SocketIO server that can be located on another device.
+# Video Streamer Using Multiple Containers
+This alwaysAI app performs realtime object detection and streams video and text data to a Flask-SocketIO server running in another container managed by [Docker Compose](https://docs.docker.com/compose/).
 
 ## Setup
 This app requires an alwaysAI account. Head to the [Sign up page](https://www.alwaysai.co/dashboard) if you don't have an account yet. Follow the instructions to install the alwaysAI toolchain on your development machine.
 
 Next, create an empty project to be used with this app. When you clone this repo, you can run `aai app configure` within the repo directory and your new project will appear in the list.
 
+This app can run on any docker-enabled Linux system (amd64, armv7hf, aarch64) with docker-compose installed.
+
+## Architecture
+
+This app has two components, a computer vision alwaysAI app and a server for displaying the video and data feed from the computer vision app. Docker compose is used to construct the app from the two services running in their own containers. The `docker-compose.yml` file defines the app structure and the arguments for each container.
+
 ## Usage
-### Server
-The server is a Flask-SocketIO server that hosts a webpage and a socketio server.
 
-First, create the Python virtual environment with the dependencies. For example, on Linux run these steps:
+Before you can build and run the full app you need to install the dependencies of the alwaysAI computer vision app:
 
 ```
-$ virtualenv venv
-$ source venv/bin/activate
-(venv) $ pip install -r requirements.txt
+$ cd cv
+$ aai app configure
+$ aai app deploy
 ```
 
-Now, you should be able to run the app:
+Now, you can build, start, and stop the app using `docker-compose`. Move back to the root app directory and run:
 
 ```
-(venv) $ python app.py
-[INFO] Starting server at http://localhost:5001
+$ docker-compose build
+$ docker-compose up
 ```
 
-Open the link in a browser on your machine. Next, start the realtime object detection app.
+A link for the web page will be shown in the logs:
 
+```
+$ docker-compose up
+Recreating video-streamer-multi-container_server_1 ... done
+Recreating video-streamer-multi-container_cv_1     ... done
+Attaching to video-streamer-multi-container_server_1, video-streamer-multi-container_cv_1
+server_1  | [INFO] Starting server at http://localhost:5001
+cv_1      | Loaded model:
+cv_1      | alwaysai/mobilenet_ssd
+cv_1      |
+cv_1      | Engine: Engine.DNN
+cv_1      | Accelerator: Accelerator.GPU
+cv_1      |
+cv_1      | Labels:
+cv_1      | ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
+cv_1      |
+cv_1      | [INFO] Connecting to server http://localhost:5001...
+cv_1      | [INFO] Successfully connected to server.
+server_1  | [INFO] CV client connected: 20b8af7e927144dfac4f080f3946f661
+server_1  | [INFO] Web client connected: 42fc37b5674f4613b2985d644cedfd2e
+```
 
-### Realtime Object Detector
-Once the alwaysAI toolset is installed on your development machine (or edge device if developing directly on it) you can run the following CLI commands:
+### Running the CV App in Standalone Mode
 
-To set up the target device & folder path
+The CV app can also be run in Standalone mode using the Streamer. From the `cv` directory run the following commands:
 
-`$ aai app configure`
+```
+$ aai app configure
+$ aai app deploy
+$ aai app start -- --use-streamer
+```
 
-To build and deploy the docker image of the app to the target device
+> Note that tha extra `--` in the above commands is used to indicate that the parameters that follow are to be passed through to the python app, rather than used by the CLI.
 
-`$ aai app deploy`
+### Changing the CV app arguments
 
-The app has the following options:
+The app has the following arguments:
 
 ```
 $ aai app start -- --help
@@ -61,39 +88,8 @@ optional arguments:
                         second (Default: 20.0).
 ```
 
-To start the app using the defaults:
-
-`$ aai app start`
-
-To capture video from camera index 1:
-
-`$ aai app start -- --camera 1`
-
-To connect to the server at 192.168.3.2:
-
-`$ aai app start -- --server-addr 192.168.3.2`
-
-To stream frames at 5 FPS:
-
-`$ aai app start -- --stream-fps 5`
-
-> Note that tha extra `--` in the above commands is used to indicate that the parameters that follow are to be passed through to the python app, rather than used by the CLI.
-
-#### Example
-
-Run the realtime object detector connecting to `192.168.3.2` and streaming at 5 FPS:
+To change the parameters that are used by docker compose, update the `CMD` line of the `Dockerfile.service` file in the `cv` directory. For example, to lower the streaming FPS:
 
 ```
-$ aai app start -- --server-addr 192.168.3.2 --stream-fps 5
-Loaded model:
-alwaysai/mobilenet_ssd
-
-Engine: Engine.DNN
-Accelerator: Accelerator.GPU
-
-Labels:
-['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
-
-[INFO] Connecting to server http://192.168.3.2:5001...
-[INFO] Successfully connected to server.
+CMD ["python3", "-u", "app.py", "--", "--stream-fps", "5"]
 ```

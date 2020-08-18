@@ -3,4 +3,4 @@ FROM alwaysai/edgeiq:${ALWAYSAI_HW}-0.15.0
 ENV PATH="/app/venv/bin:$PATH"
 WORKDIR /app
 COPY . ./
-CMD ["python", "-u", "app.py"]
+CMD ["python3", "-u", "app.py"]

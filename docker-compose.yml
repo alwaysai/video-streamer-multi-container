@@ -3,7 +3,7 @@ services:
     cv:
         build:
             context: cv
-            dockerfile: Dockerfile.template
+            dockerfile: Dockerfile.standalone
         privileged: true
         network_mode: host
         depends_on:
@@ -13,6 +13,6 @@ services:
     server:
         build:
             context: server
-            dockerfile: Dockerfile.template
+            dockerfile: Dockerfile
         privileged: true
         network_mode: host

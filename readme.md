@@ -19,7 +19,7 @@ Before you can build and run the full app you need to install the dependencies o
 ```
 $ cd cv
 $ aai app configure
-$ aai app deploy
+$ aai app install
 ```
 
 Now, you can build, start, and stop the app using `docker-compose`. Move back to the root app directory and run:
@@ -58,7 +58,7 @@ The CV app can also be run in Standalone mode using the Streamer. From the `cv` 
 
 ```
 $ aai app configure
-$ aai app deploy
+$ aai app install
 $ aai app start -- --use-streamer
 ```
 

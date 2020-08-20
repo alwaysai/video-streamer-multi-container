@@ -91,5 +91,5 @@ optional arguments:
 To change the parameters that are used by docker compose, update the `CMD` line of the `Dockerfile.service` file in the `cv` directory. For example, to lower the streaming FPS:
 
 ```
-CMD ["python3", "-u", "app.py", "--", "--stream-fps", "5"]
+CMD ["python3", "-u", "app.py", "--stream-fps", "5"]
 ```
